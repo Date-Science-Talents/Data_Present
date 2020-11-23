@@ -1,0 +1,35 @@
+Story line:
+(Specific visual plan in next step)
+
+I. Project Introduction (Purpose, briefly describe the scene and how to do it, social significance)
+II. Project purpose: How to improve the project, the purpose of improvement is to better serve users
+
+III. Data analysis：
+a. Introduce the current status of the project
+b. Correlation analysis of users' characteristics (age distribution, sex, disease, and location)
+c. Activities:
+1 Activity characteristics of users in different locations
+2 Activity characteristics of users with different diseases
+3 Activity characteristics of users of different ages
+4 Activity characteristics of users of different genders
+5 Change over time
+6 Changes before and after Lockdown
+7 Correlation between activities (the previous activity leads to the growth of the latter)
+8 Monthly Top Activity List (activity Popularity)
+9 The difference between the behaviour of new users and that of old users
+10 User growth data, daily live
+11 Classification of locations:
+Home
+Blackwood
+Care home
+12 Clustering of activities:
+Game
+Music
+Movie
+etc.
+
+IV. Conclusion
+V. Advice
+What data will be needed in the future:
+User evaluation
+etc.
