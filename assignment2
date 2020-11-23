@@ -1,5 +1,23 @@
-!pip install  jieba
-!pip install  wordcloud
+#!/usr/bin/env python
+# coding: utf-8
+
+# # Assignment2 - Jialiang Ren
+
+# ## Preparation
+
+# ### Task1: install and update all the libs we might need
+
+# In[1]:
+
+
+get_ipython().system('pip install  jieba')
+get_ipython().system('pip install  wordcloud')
+
+
+# ### Task2: import all the libs we might use later
+
+# In[2]:
+
 
 import pandas as pd 
 import numpy as np
@@ -17,3 +35,1452 @@ import scipy.stats as stats
 
 # from IPython.core.interactiveshell import InteractiveShell 
 # InteractiveShell.ast_node_interactivity="all"
+
+
+# ### Task3: review the requirements in the handbook
+# 
+# #### Review the requirements in the handbook
+# 
+# **Brief**
+# 
+# Carry out a structured analysis of a portion of the data provided by your data holder. This should be structured as follows. This assignment is carried out with your group project. However, each student has to hand in their ​own​ and individual​ analysis. Within each group, students should decide that each student is doing an independent piece of analysis on a different part of the data.
+# 
+# - Describe​: tell us about the data that you have. We expect to see:
+#     - what is the general type of the data (tabular, network, geographical, textual etc.),
+#     - how large and complex is it (rows/columns, size, variation, structure)
+#     - What fields and data types are present (max/min, levels for categorical values). 
+#     - Links between this data and other data (e.g. foreign keys, unique ids)
+#     - Summary statistics about the data - how many people, what time frame, field averages etc.
+#     - How does the data relate to the questions that the data owner has discussed with you?
+# 
+
+# Q1: What is the general type of the data (tabular, network, geographical, textual etc.)
+
+# It is a tabular type of data, the file extension is .xlsx . However, I failed to upload big .xlsx files to jupyter so I changed its extension into .csv.
+
+# Q2: How large and complex is it (rows/columns, size, variation, structure)
+
+# In[3]:
+
+
+# Read data
+ccdata_original = pd.read_csv("CCData2020.csv")
+#have a brief look at data
+ccdata_original.head(10)
+
+
+# In[4]:
+
+
+ccdata_original.tail(10)
+
+
+# In[5]:
+
+
+ccdata_original.describe()
+
+
+# In[6]:
+
+
+ccdata_original.describe(include="object")
+
+
+# In[7]:
+
+
+ccdata_original.info()
+
+
+# In[8]:
+
+
+ccdata_original.shape
+
+
+# In[9]:
+
+
+ccdata_original.count()
+# calculate non-NaN cell
+t=0
+for i in ccdata_original.count():
+    t = t + i
+print(t)
+
+
+# In[10]:
+
+
+# Read another data
+cdadata_original = pd.read_excel("CustomerDataAnon.xlsx")
+# have a look at the data
+cdadata_original.head()
+
+
+# In[11]:
+
+
+cdadata_original.info()
+
+
+# In[12]:
+
+
+cdadata_original.count()
+# calculate non-NaN cell
+t=0
+for i in cdadata_original.count():
+    t = t + i
+print(t)
+
+
+# In[13]:
+
+
+cdadata_original.describe(include = "all")
+
+
+# In[14]:
+
+
+cdadata_original.head()
+
+
+# In[15]:
+
+
+cdadata_original.tail()
+
+
+# In[16]:
+
+
+# check U of Gender
+cdadata_original[cdadata_original["Gender"]=="U"]
+
+
+# In[17]:
+
+
+cdadata_original["Gender"].value_counts()
+
+
+# In[18]:
+
+
+cdadata_original["Gender"].value_counts(1)
+
+
+# **CCData2020: **
+# It has 314766 rows and 17 columns, its size is about 37MB, it has 5351022 cells, including 2118086 non-NaN cells.
+# There is no numeric value in this file.
+# - data in the first column are the time of the reported activity, data type is 
+# - data in the second column are the unique identifier of the activity, not the user/
+# - data in the third column are a unique identifier of the visitor, according to the data holder, we should use this column as the only identity of users.
+# - data in the fourth column are the category of the visitor,
+# - most data in the fifth column are the locations of the visitors while the value, "Night Support Service" in this column is not the locatiuon but a kind of service according to the data holder,
+# - data in the six column is the title of the link, and is the same as activities.
+# - data in the seventh column is the tyle of the link,
+# - data in the eighth column is the content information
+# - other columns should not exist, there is something wrong while exporting data.
+# 
+# **CustomerDataAnon**
+# It has 441 rows and 6 columns, its size is about 33KB, it has 2646 cells, including 2193 non-NaN cells.
+# - data in the first column is the ID, it related to the ExternalID in CCData2020
+# - data in the second column describes the visitor's gender, including 230 females ( 52.2% ) , 202 males ( 45.8% ), and 9 unknowns ( 2% ). 
+# - data in the third column describes the date of birth of visitors
+# - data in the fourth column descibes the age of visitors, the average age is 64.68, the standard deviation is 19.11, the youngers user is 2 years old and the oldest uesr is 101 yeard old.
+# - data in the fifth column describes their staff plan conditions
+# - data in the sixth column describes the coindition of the care system, also indicates the health condition of the users.
+# 
+# We can merge the two files and explore some relationships deeply, however, in this assignment I will not use the second dataset. Accoding to the 
+# This alos answers Q4, " Links between this data and other data (e.g. foreign keys, unique ids)"
+
+# Q3: What fields and data types are present (max/min, levels for categorical values)?
+
+# In[19]:
+
+
+ccdata_original.columns
+
+
+# In[20]:
+
+
+ccdata_original.Time.describe()
+
+
+# There are 8 fields:
+# 1. Time, VisitorID, ExternalID, xxx, xxx, LinkTitle, LinkType, ContentInfo; only time column has max and min value, and I will explore it later
+# 2. What we know is, the ExternalID value is float64. Time value should be datetime,  other values should be string; however all of them are object, which might mean that there are diffefent types of data in those columns. I should unify them.
+# 3. Time is used as categorical value in the database. But I can use different classification data according to the content I want to analyze. For example, if I want to analyze changes in user behavior over time, I can use Time as classified data, or LinkTitle as classified data.
+# 4. There are some strange data in Time, I will clean the data first and then find the max and min value in Time column.
+
+# In[21]:
+
+
+# determin whether there are null values in this dataset.
+ccdata_original.isnull().any()
+
+
+# <!-- According to the data holder, both VisitorID and ExternalID can be use to identify people, and there are some NULL in ExternalID. I do not use this column while analysing data, so I will drop it. -->
+
+# In order to answer other questions, I should clean the data I have first.
+
+# ## Find strange things in data and clean data
+
+# There are several strange things I found after have a look at the dataset:
+# 1. all the columns have nan data except the Time column, I should find the reason why there are nan valus.
+# 2. according to the data holder, there should only be 8 columns, so the last nine columns should have no value.
+# 3. there are some unnamed columns, "Unnamed: 3" and "Unnamed: 4", I should confirm its name with the data holder.
+# 
+# 
+
+# ### Task1: find nan values in the first eight columns and find the reason why there are nan values
+# 
+# Because there is no nan value in the 1st column I start from the 2nd column
+
+# #### find nan values in 2nd column, which name is "VisitorID"
+
+# In[22]:
+
+
+ccdata_original[ccdata_original["VisitorID"].isnull() == True]
+
+
+# These rows share some same characteristics:
+# 1. I found that the number of those index are always paired, such as: 55554 and 55555, 55562 and 55563; the first row is URL (since it starts with src=", i think it might be part of an HTML file) and the second row is part of HTML file since it include "</iframe></p></center>" which is part of HTML fine. I will give these two rows a name as "paired rows", for better understanding.
+# 2. There are only values in the first column, there is no value in other columns.
+# 
+# The value in "Time" is not time value but a part of HTML format data. So I will check the previous row and the next row of those values and try to find some relationships.
+
+# Find the surrounding rows number:
+
+# In[23]:
+
+
+ccdata_null = ccdata_original[ccdata_original["VisitorID"].isnull() == True].index.tolist()
+ccdata_null_pre=[]
+ccdata_null_next=[]
+ccdata_null_around = []
+
+
+ccdata_null_pre[:] = [x -1 for x in ccdata_null]
+ccdata_null_next[:] = [x +1 for x in  ccdata_null[1::2]]
+ccdata_null_around = ccdata_null + ccdata_null_pre + ccdata_null_next
+ccdata_null_around = list(set(ccdata_null_around))
+print(ccdata_null_around)
+
+
+# Have a looke at these rows:
+
+# In[24]:
+
+
+ccdata_original.loc[ccdata_null_around]
+
+
+# The next row of the paired rows is normal, but the value in ContentInfo column in the previous row of the paired rows is not shown fully.
+# Some data are not shown completely, I will have a close look at the value in ContentInfo column and the value in the filtered Time columns:
+
+# In[25]:
+
+
+# Have a look at the whole walue.
+print(ccdata_original.iloc[55553][7])
+print(ccdata_original.iloc[55554][0])
+print(ccdata_original.iloc[55555][0])
+
+
+# After asking to the data holder, they three should be in the same unit in the 8th column, which name is "ContentInfo". I combine them and save new data to a new dataframe to protect the original data.
+
+# In[26]:
+
+
+# Create a new dataframe and to protect the original data.
+ccdata = ccdata_original
+
+# make sure data in 8th column and 1st column are same
+print(ccdata["ContentInfo"].loc[ccdata_null_pre].drop_duplicates())
+print(ccdata["Time"].loc[ccdata_null].drop_duplicates())
+
+
+# Because the result after deduplication has only one value, there is only one value for each type of cell. I started to merge them.
+
+# In[27]:
+
+
+# Merge data
+s = ccdata.iat[55553,7]
+ccdata_htmlInfo = ccdata_original[ccdata_original["ContentInfo"] ==s].index.tolist()
+
+for i in ccdata_htmlInfo:
+    ccdata.iat[i,7] = ccdata.iat[i, 7]+ ccdata.iat[i+1, 0] + ccdata.iat[i+2, 0]
+    print(ccdata.iat[i,7])
+
+
+# In[28]:
+
+
+# make sure the is no other data in paired rows
+ccdata.iloc[:,1:].loc[ccdata_null].drop_duplicates()
+
+
+# After merging, I dwill ropp the useless rows because:
+# 1. Only the first column in these rows have data
+# 2. I have merged the data in the 1st column to the data in 8 columns so that I will not lose those data in the 1st column.
+
+# In[29]:
+
+
+ccdata_null = ccdata[ccdata["VisitorID"].isnull() == True].index.tolist()
+ccdata = ccdata.drop(ccdata_null)
+
+# have look to at the area which includes some of the data that we will remove
+print(ccdata[55553:55600])
+
+ccdata.reset_index(drop=True,inplace = True)
+
+# have a looke to make sure we have removed them all
+print(ccdata[55553:55560])
+
+
+# In[30]:
+
+
+ccdata.isnull().any()
+
+
+# #### find nan values in column3, which name is "ExternalID"
+
+# Have a look at those Nan values.
+
+# In[31]:
+
+
+ccdata[ccdata["ExternalID"].isnull() == True]
+
+
+# According to the data holder, it is ok to have Nan values in 3rd column, the "ExternalID". We can ignore them.
+# There is no Nan values in 3rd column, I will go to 4th column
+
+# #### find nan values in 4th column, which name is "Unnamed: 4"
+
+# Have a look at those Nan values.
+
+# In[32]:
+
+
+ccdata_temp = ccdata[ccdata["Unnamed: 4"].isnull() == True]
+
+
+# In[33]:
+
+
+ccdata_temp
+
+
+# In[34]:
+
+
+ccdata[15464:15470]
+
+
+# Data in these rows are strange for two reasons:
+#     1. the ExternalID should be a 4 digits
+#     2. the 4th column should not have NaN values 
+# I will remove the three rows and the operation will not affect our analysis.
+
+# In[35]:
+
+
+#d rop the rows
+# ccdata = ccdata.drop(index = [15466,15468,15469])
+
+# make sure I have dropped
+print(ccdata.loc[15464:15470])
+# reindex the dataset because I dropped some rows
+new_index = np.arange(0,(ccdata.shape[0]))
+ccdata = ccdata.set_index(new_index)
+
+# make sure I have reindexed
+ccdata.loc[15464:15470]
+
+
+# In[36]:
+
+
+ccdata.tail()
+
+
+# In[37]:
+
+
+# continue to find NaN values to clean data
+ccdata.isnull().any()
+
+
+# There is no NaN value in the 6th and 7th columns, I will go to the 8th column
+# #### find NaN values in 8th column, which name is "ContentInfo"
+
+# In[38]:
+
+
+ccdata[ccdata["ContentInfo"].isnull() == True]
+
+
+# According to the data holder, it is ok to include NaN data in this column.
+
+# #### find data in the last 9 columns
+# There should not be values in the last 9 columns
+
+# In[39]:
+
+
+ccdata[ccdata["Unnamed: 8"].notna() == True]
+
+
+# In this table, the first column is the time, the second and third columns are the user identification, and the fourth column is the user's identity information; the specific operation content of the user is in the fourth column to the eighth column. Let’s take a look at the unique values of these columns of data.
+
+# In[40]:
+
+
+# define temporary dataframe to easier deal with data and to protect ccdata
+
+ccdata_temp1 = ccdata.iloc[:,5:]
+ccdata_temp2 = ccdata_temp1.drop_duplicates()
+ccdata_temp3 = ccdata_temp2[ccdata_temp2["Unnamed: 8"].notna() == True ]
+ccdata_temp3
+
+
+# After communicating with the data holder:
+# 1. For the same data as data in the row-1653 , the information of "ContentInfo" should be merged with the information of "Unnamed: 8" and placed in the "ContentInfo" cell;
+# 2. For the data as the same data in the row-25409, the information of "LinkTitle" should be "Mary Mungo & Midge", LinkType should be "Internet", and ContentInfo should be "NaN";
+# 3. For the data as the same data in the row-50042, the information of "ContentInfo" should be the data after merging the information in all the cells behind;
+# 4. For the data as the same data in the row-66037, the information of "LinkTitle" should be "Rock Paper Scissors", LinkType should be "Internet", and ContentInfo should be "NaN";
+# 5. For the data as the same data in the row-100284, the information of "LinkTitle" should be "Dave Dee Dozy Beaky Mick & Tich", LinkType should be "Internet", and ContentInfo should be "NaN"
+# 
+# Next, start cleaning the data
+
+# 1. For the same data as data in the row-1653 , the information of "ContentInfo" should be merged with the information of "Unnamed: 8" and placed in the "ContentInfo" cell;
+
+# In[41]:
+
+
+# other values used to find duplicated rows
+a_temp = ccdata_temp3.iat[0,0] 
+b_temp = ccdata_temp3.iat[0,1] 
+
+# 1st part of content info of The National Care Standards
+c_temp = ccdata_temp3.iat[0,2] 
+
+# 2nd part of content info of The National Care Standards
+d_temp = ccdata_temp3.iat[0,3]
+
+e_temp = ccdata_temp3.iat[0,4]
+
+
+print(a_temp,"\n",b_temp,"\n",c_temp,"\n",d_temp,"\n",e_temp)
+
+
+# In[42]:
+
+
+# merge data
+number_change1 = 0
+for i in ccdata.index:
+    if (ccdata.iloc[i,5] == a_temp) & (ccdata.iloc[i,6] == b_temp) & (ccdata.iloc[i,7] == c_temp) & (ccdata.iloc[i,8] == d_temp):
+        ccdata.iloc[i,7] = c_temp + d_temp
+        ccdata.iloc[i,8] = e_temp 
+        number_change1 = number_change1+ 1
+        print('\n',"We have found", number_change1 , "data")
+        print(i, "\n\n", ccdata.iloc[i,7],"\n\n", ccdata.iloc[i,8])
+#     # output: we have finished
+    if i == ccdata.index[-1]:
+        print("Mission complete!")
+
+
+# 2. For the data as the same data in the row-25409, the information of "LinkTitle" should be "Mary Mungo & Midge", LinkType should be "Internet", and ContentInfo should be "NaN";
+
+# In[43]:
+
+
+# 1st part of LinkTitle
+a_temp = ccdata_temp3.iat[1,0] 
+
+# 2nd part of LinkTitle
+b_temp = ccdata_temp3.iat[1,1]
+
+# 3rd part of LinkTitle
+c_temp = ccdata_temp3.iat[1,2]
+
+# value that should be in LinkType column, column6 of ccdata
+d_temp = ccdata_temp3.iat[1,3]
+
+# value that should be in ContentInfo column, column7 of ccdata
+# the value in column8 ("unnamed: 8"), should be as same as the value in column7 ("ContentInfo").
+e_temp = ccdata_temp3.iat[1,4]
+
+number_change2 = 0
+for i in ccdata.index:    
+    if (ccdata.iloc[i,5] == a_temp) & (ccdata.iloc[i,6] == b_temp) & (ccdata.iloc[i,7] == c_temp) & (ccdata.iloc[i,8] == d_temp):
+        print(i)        
+        ccdata.iloc[i,5] = a_temp + b_temp + c_temp
+        ccdata.iloc[i,6] = d_temp
+        ccdata.iloc[i,7] = e_temp 
+        ccdata.iloc[i,8] = e_temp 
+        number_change2 = number_change2 + 1
+        print(print('\n',"We have found", number_change2 , "data"))
+        print(i,ccdata.iloc[i,5], ccdata.iloc[i,6], ccdata.iloc[i,7], ccdata.iloc[i,8] ,"\n\n")
+    if i == ccdata.index[-1]:
+        print("Mission complete!")
+
+
+# 3. For the data as the same data in the row-50042, the information of "ContentInfo" should be the data after merging the information in all the cells behind
+
+# In[44]:
+
+
+# combine content
+a_temp = []
+content_temp = ""
+for i in range(0,ccdata_temp3.shape[1],1):
+    a_temp.append(ccdata_temp3.iat[2,i])
+for i in range(2,len(a_temp),1):
+    content_temp = content_temp + a_temp[i]
+print("the content info should be : ", '\n', content_temp)
+
+print('\n',"I start searching data!")
+    
+# edit content
+counter = 0
+number_change3 = 0
+x = ccdata.shape[1]
+for i in ccdata.index:
+    for j in range(5,ccdata.shape[1],1):
+        if (ccdata.iat[i,j] == ccdata_temp3.iat[2,j-5]):
+            counter = counter + 1
+            if (counter == 12) :
+                number_change3 = number_change3+1
+                print('\n',"We have found", number_change3 , "data")
+                for k in range(8,ccdata.shape[1],1):
+                    ccdata.iat[i,k] = e_temp
+                    ccdata.iat[i,7] = content_temp
+                print('\n', 'The' , number_change3, ' corrected data is:', '\n', ccdata.iloc[i,5:], '\n')
+                counter = 0
+    # output: we have finished            
+    if i == ccdata.index[-1]:
+        print("Mission complete!")
+
+
+# 4. For the data as the same data in the row-66037, the information of "LinkTitle" should be "Rock Paper Scissors", LinkType should be "Internet", and ContentInfo should be "NaN"
+
+# In[45]:
+
+
+# 1st part of LinkTitle
+a_temp = ccdata_temp3.iat[3,0]
+
+# 2nd part of LinkTitle
+b_temp = ccdata_temp3.iat[3,1]
+
+# 3rd part of LinkTitle
+c_temp = ccdata_temp3.iat[3,2]
+
+# value that should be in LinkType column, column6 of ccdata
+d_temp = ccdata_temp3.iat[3,3]
+
+# value that should be in ContentInfo column, column7 of ccdata
+# the value in column8 ("unnamed: 8"), should be as same as the value in column7 ("ContentInfo").
+e_temp = ccdata_temp3.iat[3,4]
+
+number_change4 = 0
+for i in ccdata.index:
+    if (ccdata.iloc[i,5] == a_temp) & (ccdata.iloc[i,6] == b_temp) & (ccdata.iloc[i,7] == c_temp) & (ccdata.iloc[i,8] == d_temp):
+        ccdata.iloc[i,5] = a_temp + b_temp + c_temp
+        ccdata.iloc[i,6] = d_temp
+        ccdata.iloc[i,7] = e_temp 
+        ccdata.iloc[i,8] = e_temp
+        number_change4 = number_change4 + 1
+        print('\n',"We have found", number_change4 , "data")
+        print("The corrected data is:")
+        print("index:",i, "LinkTitle:",ccdata.iloc[i,5], "LinkType:",ccdata.iloc[i,6], '\n' , "ContentInfo:",ccdata.iloc[i,7],'\n',"remove values in Unnamed 8:", ccdata.iloc[i,8],'\n' )
+    # output: we have finished            
+    if i == ccdata.index[-1]:
+        print("Mission complete!")
+
+
+# 5. For the data as the same data in the row-100284, the information of "LinkTitle" should be "Dave Dee Dozy Beaky Mick & Tich", LinkType should be "Internet", and ContentInfo should be "NaN"
+
+# In[46]:
+
+
+# 1st part of LinkTitle
+a_temp = ccdata_temp3.iat[4,0]
+
+# 2nd part of LinkTitle
+b_temp = ccdata_temp3.iat[4,1]
+
+# 3rd part of LinkTitle
+c_temp = ccdata_temp3.iat[4,2]
+
+# 4thpart of LinkTitle
+d_temp = ccdata_temp3.iat[4,3]
+
+# value that should be in LinkType column, column6 of ccdata
+e_temp = ccdata_temp3.iat[4,4]
+
+# value in other columns shoule be NaN
+f_temp = ccdata_temp3.iat[4,5]
+
+# have a look at these values.
+print(a_temp,b_temp,c_temp,d_temp,e_temp,f_temp)
+
+number_change5 = 0
+for i in ccdata.index:
+    if ((ccdata.iloc[i,5] == a_temp) & (ccdata.iloc[i,6] == b_temp) & (ccdata.iloc[i,7] == c_temp)  & (ccdata.iloc[i,8] == d_temp)  & (ccdata.iloc[i,9] == e_temp) ):
+        ccdata.iloc[i,5] = a_temp + b_temp + c_temp + d_temp
+        ccdata.iloc[i,6] = e_temp
+        ccdata.iloc[i,7] = f_temp 
+        for j in range(8,ccdata.shape[1],1):
+            ccdata.iloc[i,j] = f_temp
+        number_change5 = number_change5 + 1
+        print('\n',"We have found", number_change5 , "data")
+        print("index:", i, "LinkTitle:" , ccdata.iloc[i,5],  "LinkType:", ccdata.iloc[i,6], 
+              '\n', "ContentInfo:",  ccdata.iloc[i,7],"remove values in Unnamed 8:", ccdata.iloc[i,8] ,"\n")
+    # output: we have finished            
+    if i == ccdata.index[-1]:
+        print("Mission complete!")
+
+
+# Check if there are any non-NaN values in the unnamed columns:
+
+# In[47]:
+
+
+# Select the next several columns
+ccdata_last_9columns = ccdata.iloc[:,8:]
+ccdata_last_9columns
+
+
+# In[48]:
+
+
+# Determine if there is a NaN value
+ccdata_last_9columns.drop_duplicates()
+
+
+# The following unnamed columns are all Nan values and can be deleted all:
+
+# In[49]:
+
+
+# delete columns after the 8th column.
+ccdata.drop(ccdata.columns[8:], axis=1,inplace=True) 
+# have a look at whether I delete successfully.
+ccdata.head()
+
+
+# #### Change the data in the Time column to the format of time so that the data can be compared later
+
+# In[50]:
+
+
+ccdata['Time'] = pd.to_datetime(ccdata['Time'],format = "%d/%m/%Y %H:%M")
+print(type(ccdata.iloc[1,0]))
+
+# look whether I change it successfully.
+type(ccdata.iat[1,0])
+
+ccdata.head()
+
+
+# In[51]:
+
+
+pd.to_datetime(ccdata_original.iat[1,0])
+# pd.to_datetime(ccdata_original['Time'], format = "%d/%m/%Y")
+
+
+# chang the type of data in the 3rd column, (ExternalId) into int, exclue nan data
+
+# In[52]:
+
+
+# save original data to protect them from chaning, in case I do wrong job
+ccdata_have_ExternalID = ccdata[pd.isna(ccdata['ExternalID']) == False].iloc[:,2]
+ccdata_nan_ExternalID = ccdata[pd.isna(ccdata['ExternalID']) == True].iloc[:,2]
+ccdata_ExternalID_original = ccdata["ExternalID"]
+
+# change the type of values in the 3rd column(ExternalID) and fill nan with 0 because there is no 0 in ExternalID
+ccdata_ExternalID = ccdata['ExternalID'].fillna(0)
+ccdata["ExternalID"] = ccdata_ExternalID
+
+# change type
+ccdata["ExternalID"] = ccdata["ExternalID"].apply(int)
+
+# look whether I change it successfully
+ccdata.head()
+
+
+# chang the type of the 2nd column ( VisitorID ) into str
+
+# In[53]:
+
+
+# save original data to protect them from chaning, in case I do wrong job
+ccdata_VisitorID = ccdata["VisitorID"]
+
+
+# change type
+ccdata["VisitorID"] = ccdata["VisitorID"].apply(str)
+
+# look whether I change it successfully
+
+
+# help(ccdata.infer_objects)
+ccdata.head()
+
+
+# "CustomerDataAnon.xlsx" is a cleaned data, I do not find any strange problems.
+
+# change the 3rd and 4th columns' name from unnamed to "UserType" and "Service & Location", according to the data holder
+
+# In[54]:
+
+
+ccdata = ccdata.rename(columns={'Unnamed: 3':'UserType', 'Unnamed: 4':'Service & Location'})
+
+
+# In[55]:
+
+
+# check whether I have changed it successfully
+ccdata.head()
+
+
+# #### See if there are other problems with the data
+
+# In[56]:
+
+
+ccdata.info()
+
+
+# In[57]:
+
+
+ccdata.describe(include="all")
+
+
+# In[58]:
+
+
+len(ccdata.iat[1,1])
+
+
+# In[59]:
+
+
+for i in ccdata.index:
+    assert str(type(ccdata.iat[i,0])) == "<class 'pandas._libs.tslibs.timestamps.Timestamp'>" , print("There are wrong values in the first column, the Time column")
+    assert len(ccdata.iat[i,1]) == 36 , print("Some VisitorID have a wrong value")
+    assert str(type(ccdata.iat[i,2])) == "<class 'numpy.int64'>", print("Some ExternalID are wrong")
+    if i == ccdata.index[-1]:
+        print("Assert Complete")
+
+
+# Now that the data has been cleaned, enter the step of data analysis
+
+# ### Data Analyse
+
+# #### Review the requirement about this assignment
+# 
+# Assignment 2—Project Data Analysis
+# - Describe​: tell us about the data that you have. We expect to see:
+#     - Summary statistics about the data - how many people, what time frame, field averages etc.
+#     - How does the data relate to the questions that the data owner has discussed with you?
+# - Explore​: carry out a deeper exploration of the data. This includes looking at individual fields/variables to see the distribution of values they take (e.g. evenly distributed, bell curves, bi-modal) or how they are distributed in time. It also includes relationships between variables in your dataset: are there correlations? In which direction? Complex curves? We would expect to see roughly:
+#     - 4-5 exploratory visualisations, presented in a readable form, with an explanation about what you have found
+#     - 1-2 relationships between variables analysed
+#     - Ideas about trends, outliers, clusters
+#     - Reference to statistics, i.e. a sense of which relationships are significant, and what claims you can back up.
+# 
+# 
+# *NOTE: You don’t have to actually test the hypotheses - you just have to demonstrate that you have plausibly thought about how you would test them.*
+
+# #### Describe data
+
+# Q1: Summary statistics about the data - how many people, what time frame, field averages etc.
+
+# In[60]:
+
+
+ccdata.head()
+
+
+# In[61]:
+
+
+len(list(ccdata["ExternalID"].unique()))
+
+
+# In[62]:
+
+
+ccdata.describe(include = "all")
+
+
+# There are 395 unique ExternalIDsin the dataset which means there are 394 unique person because there are Nan values which is also be counted.
+# I will analyze data from April 29th 2018 to October 30th 2020.
+
+# Q2: How does the data relate to the questions that the data owner has discussed with you?
+
+# I will analyse the differences and corelationships of the usage before and during the lockdown, so Time data and LinkTitle ( known as activity ) and 
+
+# #### Explore data: Frequency
+
+# Q1: What are the most popular activities?
+# 
+# Link title indicates the activity that users have done. As I want to see the most popular activities, I remain the top 10 popular activities
+
+# Have a quick look at these data.
+
+# In[63]:
+
+
+wordcloud2 = wc(
+    background_color=None,
+    mode="RGBA",
+    prefer_horizontal=1,
+    height=1800,
+    width=2500,
+    scale=1,
+    margin=5).generate(' '.join(ccdata['LinkTitle']))
+
+plt.imshow(wordcloud2)
+plt.axis("off")
+plt.show()
+
+
+# I see some similar values in this word cloud but I will not combine them in this assignment because I do not know what the meaning behind the values.
+
+# In[64]:
+
+
+ccdata_temp = ccdata["LinkTitle"].value_counts()
+
+
+# In[65]:
+
+
+ccdata_temp = ccdata_temp[:10]
+ccdata_temp
+
+
+# I use horizontal histogram to display the data. Why should I use horizontal histogram?
+# According to http://www.cyber-wit.com/onlineHelp/horizontalHistogram.htm, horizontal histogram is used to display category frequencies of a data set as horizontal bars and I will display the times and frequencies.
+
+# In[66]:
+
+
+# Set values 
+label = ccdata_temp.index
+label = label[::-1]
+
+number = list(ccdata_temp)
+number= number[::-1]
+
+x_max = ccdata_temp[0]*1.05
+
+
+# Draw the plot
+plt.barh(range(10), number, height=0.7, alpha=0.8, color = "seagreen")   
+plt.yticks(range(10), label)
+plt.xlim(0,x_max)
+
+# Set labels for the plot
+plt.xlabel("Times",fontsize = 12)
+plt.ylabel("Activity",fontsize = 12)
+plt.title("Activitiy Times",color = 'teal',fontsize=16)
+xlim_scale = np.arange(0, x_max,5000)
+plt.xticks(xlim_scale)
+
+# Set grids for the plot to make it clear
+ax1 = plt.gca()
+ax1.xaxis.grid(color='teal',
+              linestyle='--',
+              linewidth=1,
+              alpha=0.5)
+
+
+# Display values of each bar
+for x, y in enumerate(number):
+    plt.text(y -5000, x - 0.1 , '%s' % y, color = "white")  
+plt.show()
+
+
+# In[67]:
+
+
+# look at the frequency
+ccdata["LinkTitle"].value_counts(1)
+
+
+# There are 1395 kinds of activities users had done, the most popular one is Entertainment, it is about 2.5 times more than the 2nd popular one, My Interest.
+# The ratio of the most popular activity, the Entertainment, is about 13.7%.
+
+# Q2: Activities whose usage declines over time
+
+# First, I want to explore how the usage of all activities change over time.
+
+# In[68]:
+
+
+ccdata["Time"].describe()
+
+
+# In[69]:
+
+
+# find the fist and last time
+first_time = min(ccdata["Time"])
+last_time = max(ccdata["Time"])
+ccdata.head()
+print("The dataset is from", first_time, "to", last_time)
+
+# Create a new temporary dataframe to save dataset and I operate on the new dataset so that I will not change the cleaned dataset ,"ccdata".
+ccdata_activities = ccdata.loc[:,["Time","LinkTitle"]]
+
+# Remove the date in October and it will not affect my conclusion because 
+# (1) here is only a tiny amount of values and,
+# (2) I will see the trends of activities by month and Ocober's data is not complete.
+
+ccdata_activities = ccdata_activities[ccdata_activities["Time"] >= datetime(2018, 11, 1)]
+ccdata_activities.set_index(ccdata_activities["Time"], inplace = True)
+ccdata_activities = ccdata_activities.drop(columns = ["Time"] )
+ccdata_activities.head()
+
+
+# In[70]:
+
+
+#Analyse monthly
+count_by_month = ccdata_activities.resample("M").count()
+
+# Draw graph
+_x = count_by_month.index
+_y = count_by_month.values
+
+_x = [ i.strftime("%Y-%m-%d")  for i in _x ]
+
+plt.figure(figsize = (20,8), dpi = 80 )
+plt.plot(range(len(_x)), _y)
+plt.xticks(range(len(_x)), _x, rotation = 45)
+
+ax = plt.gca()
+ax.xaxis.grid(color='slategrey',
+              linestyle='--',
+              linewidth=1,
+              alpha=0.5)
+
+plt.title('How does the total number of activities change over time', fontsize = 24, color = 'teal' )
+plt.xlabel('Month', fontsize = 16)
+plt.ylabel('Times', fontsize =16)
+
+plt.show()
+
+
+# We can see from the grapgh that the total number of activies declined from 2019-03 to 2020-01, and increased significantly from 2020-01 to 2020-05, the peak value is 18627, which means in May 2020, visitors has reported over 18,000 data.
+
+# I will see the change of the usage of some specific activities because there are so many activities, I will just see the top5 popular activities.
+
+# In[71]:
+
+
+t= ccdata_activities.value_counts().nlargest(5)
+t_list = t.index.tolist()
+p = []
+
+for i in t_list:
+    i = str(i)
+    i = i.replace(',','')
+    i = i.replace("'",'')
+    i = i.replace("(",'')
+    i = i.replace(")",'')
+    i = i.replace("",'')
+    p.append(i)
+
+print(p)
+
+ccdata_activities.head(20)
+
+
+# In[72]:
+
+
+# find top5 popular activities and draw line graph to show their trend
+ccdata_activities_top = ccdata_activities[ccdata_activities['LinkTitle'].isin(p)]
+ccdata_activities_top.head()
+
+
+# In[73]:
+
+
+# define funtion to draw line graph
+def plot_activities(ccdata_activities_top,label):
+    count_by_month = ccdata_activities_top.resample("M").count()
+    _x = count_by_month.index
+    _y = count_by_month.values
+    _x = [ i.strftime("%Y-%m-%d")  for i in _x ]
+    plt.plot(range(len(_x)), _y, label = label,linewidth=3) 
+    ax = plt.gca()
+    ax.xaxis.grid(color='slategrey',
+                  linestyle='--',
+                  linewidth=1,
+                  alpha=0.5) 
+plt.figure(figsize = (20,8), dpi = 80 )
+
+# draw lines one by one
+for group_name, group_data in ccdata_activities_top.groupby(by = "LinkTitle"):
+    plot_activities(group_data,group_name)
+
+# set leble, legend and forms
+plt.xticks(range(len(_x)), _x, rotation = 45) 
+plt.legend(loc="best")
+plt.title('How does the top5 activities change over time', fontsize = 24, color = 'teal' )
+plt.xlabel('Month', fontsize = 16)
+plt.ylabel('Times', fontsize =16)
+plt.show()
+
+
+# Although the total number of activities declined and reached the lowest value in Jan 2020 the declination of top5 activities is not that dramatically.
+# I need use a math method to determine whether an activity declined or not and the confidence interval
+
+# In[74]:
+
+
+# determin which activities above declined over time.
+
+# use Cox-Stuart test to do trend analysis and to find out the trends of the activities above
+ 
+def cox_stuart(one_list,debug=False):
+    temp_list=one_list.copy()
+    raw_len=len(temp_list)
+    if raw_len%2==1:
+        del temp_list[int((raw_len-1)/2)]
+    c=int(len(temp_list)/2)
+    n_pos=n_neg=0
+    for i in range(c):
+        diff=temp_list[i+c]-temp_list[i]
+        if diff>0:
+            n_pos+=1
+        elif diff<0:
+            n_neg+=1
+        else:
+            continue
+    num=n_pos+n_neg
+    k=min(n_pos,n_neg)
+    p_value=2*stats.binom.cdf(k,num,0.5) #Confidence interval is 95%
+    if debug:
+        print('fall:%i, rise:%i, p-value:%f'%(n_neg, n_pos, p_value))
+    if n_pos>n_neg and p_value<0.05:
+        return 'increasing'
+    elif n_neg>n_pos and p_value<0.05:
+        return 'decreasing'
+    else:
+        return 'not increasing or decreasing significantly '
+    
+# print all decreasing and inreasing activities
+decrease = []
+increase = []
+decrease_total  = 0
+increase_total = 0
+for i in ccdata_activities["LinkTitle"].unique():
+    activities_unique = ccdata_activities[ccdata_activities["LinkTitle"] == i]
+    activities_unique = activities_unique.resample("M").count()
+    unique_value = list(activities_unique["LinkTitle"])
+    x = cox_stuart(unique_value)
+    if x == "decreasing":
+        decrease_total = decrease_total + 1
+        decrease.append(i)
+    if x == "increasing":
+        increase_total = increase_total + 1
+        increase.append(i)
+print("Decreasing:",  decrease_total)
+print(decrease)
+print("\n")
+print("Increasing:",  increase_total)
+print(increase)
+
+
+# Most activities occur too few times, and it is meaningless to count their trends over time.
+# According to the Cox-Stuart test result, there are 50 activities declined with the confidence interval of 95%.
+# The declined activities are: 'My Music', 'Entertainment', 'Videos', 'Play Games', 'My Interests', 'ITV Test Card', 'YouTube', 'Photo Albums', 'Elvis Presley', 'Bowling', 'Romantic Comedies', 'Adele', 'Netflix', 'Patience', 'Mahjong', 'Mini Golf', 'UEFA Champions League', 'BBC RADIO 1', 'Disney Films Video Music Playlist', 'Transport', 'Racing Post', 'Bryan Adams - (Everything I Do) I Do It For You', 'Yahoo Mail', 'Bubbleshooter for Michael D.', 'RAF Stations UK Map', 'Magic- Listen Direct', 'Guy Mitchell', 'Bubble Shooter (IQPC)', 'Dundee FC', 'Tom Walker', 'Huawei Terms & Conditions', 'Ed Sheeran', 'SMILE Project Information', 'ITV Hub', 'Candy Crush Soda', 'Fats Domino', 'National Lottery', 'War Movies', 'Dundee Dance Studios', 'BBC Radio Scotland', 'Word Search', 'Military and War Documentaries', 'Paul McCartney', 'John Lennon', 'Xplore Buses Dundee', 'Dundee and Angus College', 'Justin Timberlake', 'Taggart Episodes', 'Annie Lennox', 'Comedy Western Movies' .
+Q3: New lockdown users, what are the differences between their usage and other user's usage?
+# First, find the new lockdown users. According to the data holder, 
+# 
+# "[10/29 下午2:26] Lynda WEBB
+#     The external_ID is what you want to use, I saw it when you shared the screen , try extracting data, always using that as you key identifier"
+# So I will use ExternalId as the key identifier to filter users.
+# 
+
+# In[75]:
+
+
+# ccdata.tail()
+# drop nan values
+user_data = ccdata[ccdata["ExternalID"] > 0]
+user_data.head()
+
+
+# In[76]:
+
+
+# filter users in lockdown
+lockdown_user = user_data[user_data["UserType"] == "User"]
+lockdown_user = lockdown_user[ lockdown_user["Time"] >= datetime(2020,3,24) ] 
+lockdown_user.head()
+
+
+# In[77]:
+
+
+# filter users before lockdown
+before_lduser = user_data[user_data["UserType"] == "User"]
+before_lduser = user_data[ user_data["Time"] < datetime(2020,3,24) ] 
+before_lduser.head()
+
+
+# In[78]:
+
+
+i = before_lduser["ExternalID"].unique()
+
+
+# In[79]:
+
+
+# find new lockdown users
+new_lduser = lockdown_user[~lockdown_user['ExternalID'].isin([i])]
+
+
+# In[80]:
+
+
+# have a look at those values to make sure all of them are less than five digits
+print("New lockdown users after filtering data:")       
+print(new_lduser["ExternalID"].describe()   )    
+print(new_lduser["ExternalID"].drop_duplicates() )
+
+
+# In[81]:
+
+
+print("Have a look at old data.")
+print(before_lduser["ExternalID"].describe())
+print(before_lduser["ExternalID"].drop_duplicates() )
+
+
+# In[82]:
+
+
+print("All users")
+print(ccdata["ExternalID"].describe())
+print(ccdata["ExternalID"].drop_duplicates() )
+
+
+# To analyse new lockdown users' behavior, I will see whether they are more active or not. Do they report more data per day than other users?
+
+# In[83]:
+
+
+counter_new = 0
+counter_old = 0
+
+# calculate user numbers
+for i in user_data['ExternalID']:
+    if i in new_lduser['ExternalID']:
+        counter_new = counter_new +1
+    else:
+        counter_old = counter_old + 1
+lockdown_start = datetime(2020, 3, 24)
+
+# calculate time period
+days_lockdown = ccdata["Time"].max() - lockdown_start
+days_nonlockdown =  lockdown_start - ccdata["Time"].min()
+
+days_lockdown = days_lockdown.days + 1
+days_nonlockdown = days_nonlockdown.days
+
+data_perday_lockdown = counter_new / days_lockdown
+data_perday_nonlockdown =  counter_old / days_nonlockdown
+
+print("New lockdown users report ", round(data_perday_lockdown,2), "data per day, while other users report ", 
+      round(data_perday_nonlockdown,2), "data per day.")
+
+
+# In[84]:
+
+
+# draw graph
+_x = [data_perday_lockdown, data_perday_nonlockdown]
+_y = ["New lockdown users" , "Other users"]
+
+plt.figure(figsize = (4,8))
+
+plt.bar(range(len(_x )), _x ,fc='teal', width = 0.7,align = "center")
+
+plt.xticks(range(len(_x)), _y, rotation = 45) 
+
+plt.title('Compare data reported by new lockdown users and other users', fontsize = 24, color = 'teal' )
+plt.xlabel("Different Users" , fontsize = 16)
+plt.ylabel("The number of times the data has been reported", fontsize =16)
+
+
+plt.show()
+
+
+# New lockdown users report  505.66 data per day, while other users report  213.78 data per day. So new lockdown users are far more active than other users. 
+
+# ### Correlations
+# In this part, I will explore some correlations betweent different data.
+# 
+# Q1: Correlation in the activities used between prior to and during the lockdown.
+
+# 1. there are so many individual values of activities in this dataset, I find two ways to explore the correlationships:
+#     1. according to the wordcloud, I find some similar phrases, like "Play Games", "Games Play", "Matching Games" and "Player Games", from my perspective, all of them are games, so I can give them an arribute like "Play Games" to reduce the total amount of activities.
+#     ![wordcloud](https://tva1.sinaimg.cn/large/0081Kckwgy1gkmson1cjdj30nw0fotix.jpg)
+#     2. I can select top10 popular activites before and between lockdown, using heatmap to see the relationships.
+# 
+# After talking to Zezhong, and because the total amount of individual activities are too big to give attributes to(there are about 1400 individual values ), he prefers the 2nd method. I will choose this one.
+
+# In[85]:
+
+
+# top10 popular activities
+heatmap_activity = ccdata.loc[:,["Time","LinkTitle"]]
+p = heatmap_activity["LinkTitle"].value_counts().nlargest(10)
+p
+
+
+# In[86]:
+
+
+# drop other values
+heatmap_activity = ccdata.loc[:,["Time","LinkTitle"]]
+p = heatmap_activity["LinkTitle"].value_counts().nlargest(10)
+print(heatmap_activity.head(20))
+
+heatmap_activity = heatmap_activity[heatmap_activity['LinkTitle'].isin(list(p.index))]
+print(heatmap_activity.head(20))
+
+heatmap_activity.set_index(["Time"], inplace=True)
+print(heatmap_activity.head(20))
+heatmap_activity.value_counts()
+
+
+# In[87]:
+
+
+# define the y axis for the heat map, and the column for the dataframe used to draw a heat map
+j = []
+for i in p.index:
+    j.append(i)
+print(j)
+
+
+# In[88]:
+
+
+# define a new dataframe to protect data in heatmap_activity
+df_heatmap = heatmap_activity
+df_heatmap = df_heatmap.resample("M").count()
+df_heatmap
+
+
+# In[89]:
+
+
+heatmap_activity[heatmap_activity["LinkTitle"] == "Card Matching Games"]
+
+
+# In[90]:
+
+
+# fill data in the dataframe for heatmap
+
+# fill entertainment data
+Entertainment = heatmap_activity[heatmap_activity["LinkTitle"] == "Entertainment"]
+Entertainment.columns = ["Entertainment"]
+Entertainment = Entertainment.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, Entertainment], axis=1)
+df_heatmap.head()
+
+
+# fill My Interests data
+MyInterests = heatmap_activity[heatmap_activity["LinkTitle"] == "My Interests"]
+MyInterests.columns = ["MyInterests"]
+MyInterests = MyInterests.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, MyInterests], axis=1)
+df_heatmap.head()
+
+
+# fill YouTube data
+YouTube = heatmap_activity[heatmap_activity["LinkTitle"] == "YouTube"]
+YouTube.columns = ["YouTube"]
+YouTube = YouTube.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, YouTube], axis=1)
+df_heatmap.head()
+
+
+# fill Google data
+Google = heatmap_activity[heatmap_activity["LinkTitle"] == "Google"]
+Google.columns = ["Google"]
+Google = Google.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, Google], axis=1)
+df_heatmap.head()
+
+
+# fill My Music data
+MyMusic = heatmap_activity[heatmap_activity["LinkTitle"] == "My Music"]
+MyMusic.columns = ["MyMusic"]
+MyMusic = MyMusic.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, MyMusic], axis=1)
+df_heatmap.head()
+
+
+# fill Play Games data
+PlayGames = heatmap_activity[heatmap_activity["LinkTitle"] == "Play Games"]
+PlayGames.columns = ["PlayGames"]
+PlayGames = PlayGames.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, PlayGames], axis=1)
+df_heatmap.head()
+
+
+# fill Card Matching Games data
+CardMatchingGames = heatmap_activity[heatmap_activity["LinkTitle"] == "Card Matching Games"]
+CardMatchingGames.columns = ["CardMatchingGames"]
+CardMatchingGames = CardMatchingGames.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, CardMatchingGames], axis=1)
+df_heatmap.head(20)
+
+
+# fill Single Player Games data
+SinglePlayerGames = heatmap_activity[heatmap_activity["LinkTitle"] == "Single Player Games"]
+SinglePlayerGames.columns = ["SinglePlayerGames"]
+SinglePlayerGames = SinglePlayerGames.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, SinglePlayerGames], axis=1)
+df_heatmap.head()
+
+
+# fill Videos data
+Videos = heatmap_activity[heatmap_activity["LinkTitle"] == "Videos"]
+Videos.columns = ["Videos"]
+Videos = Videos.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, Videos], axis=1)
+df_heatmap.head()
+
+
+# fill Patience data
+Patience = heatmap_activity[heatmap_activity["LinkTitle"] == "Patience"]
+Patience.columns = ["Patience"]
+Patience = Patience.resample("M").count()
+df_heatmap = pd.concat([df_heatmap, Patience], axis=1)
+df_heatmap.head(20)
+
+
+# In[91]:
+
+
+# drop LinkTitle column and fill 0 to NaN value
+df_heatmap.drop(columns = "LinkTitle", inplace = True)
+
+df_heatmap.fillna(0, inplace=True)
+df_heatmap.head()
+
+
+# In[92]:
+
+
+tttt=df_heatmap
+tttt["Time"]=tttt.index
+tttt["Time"] = tttt["Time"].apply(lambda x: x.strftime('%Y-%m'))
+
+df_heatmap = df_heatmap.set_index(tttt["Time"])
+
+df_heatmap.drop(columns = "Time",inplace = True)
+df_heatmap.head()
+
+
+# In[93]:
+
+
+# heatmap_activity = heatmap_activity.pivot("Activity", heatmap_activity.index)
+f, ax = plt.subplots(figsize=(18, 8))
+ax = sns.heatmap(df_heatmap.T, linewidths=1, ax=ax, cmap = "YlOrRd")
+
+
+# From the heatmap, I find that "Google", "Card Matching Games",  "Single Player Games" inreased after lockdown, and "Patience", "YouTube", "Videos","My Interests" decreased after lockdown. So my speculation is, because most users had desease and they went out less and stayed at home more, they played more games and watched less videos at home during the lockdow.
+
+# ## Reflections
+# 
+# - Reflect and Hypothesise: What do you think might be behind the relationships and distributions that you have found? How does your data relate to the world? In short, what hypotheses came up as you explored the data, and how would you go about testing them? We would expect to see:
+#     - A 200 word reflection on the data
+#     - 3-5 hypotheses with an explanation of:
+#         - What your hypothesis is
+#         - why you think that (referring to your graphs)
+#         - How you could go about testing it (note that this may include: further studies, asking the data owner, using some advanced algorithms, checking each data point individually, etc..)
+#         
+# 
+
+# **Reflection on the data**
+# 
+# <mark>On the whole, the number of activities that occurred first decreased and then increased. The frequency of 50 activities decreased over time, and the frequency of 25 activities increased over time, however, there are no significant changes in data for most activities, with the confidence interval of 95%.
+# On the whole, most of our users are disable people, the range of their age is from 2 to 101.<mark>
+# 
+# **Reflection on the data**
+# 
+# <mark>The total number of activies increased significantly from 2020-03 to 2020-05, the peak value is 18627, which means in May 2020, visitors has reported over 18,000 data.<mark>
+# New lockdown users reported much more data than other users.<mark>
+# 
+# **Hypotheses**
+#     
+# Hypotheses1:
+#     
+#     I speculate the reason for the increase is that due to lockdown plus users are disable, it is more difficult for them to go out, so they have more time to stay at home and use CleverCog.
+# 
+# The way to test Hypotheses1:
+#     
+#     Through qualitative research to understand their travel before and after lockdown, and use the log statistics reported by CleverCog.
+#     
+#     
+# Hypotheses2:
+#     
+#     Maybe researchers have found some extremely active users during the lockdown and they have some different behaviors from users who strated to use CleverCog before lockdown, and these users contribute a huge amount of data.
+# 
+# The way to test Hypotheses2: 
+#     
+#     Ask researchers about the changes in promotion strategy before and during lockdown.
+#     
+# **Reflection on the data**
+#     
+# <mark>Most activities that decline over time are related to audio and video, such as youtube, a certain actor, a certain type of movie or a certain song.
+# Most activities that rise over time are game-related, such as a game or Play Games. I also found that the search for tesco is gradually increasing.
+# From the heatmap, I find that "Google", "Card Matching Games",  "Single Player Games" inreased after lockdown, and "Patience", "YouTube", "Videos","My Interests" decreased after lockdown.<mark>  
+#   
+# **Hypotheses**
+#     
+# Hypotheses3:
+#     
+#     I speculate the reasons for the changings are:
+#     Due to lockdown law, people have to wear masks and maintain a social distance of 2 meters when going out, so fewer people go out. In addition, our users have disability, and it is extremely difficult for them to go out. So they have more time to stay at home and they need to play games to kill time. And they need to buy something online (maybe mainly for food), so the search volume for tesco has also increased.
+# 
+# The way to test Hypotheses3: 
+#     
+# 1. Confirm the actual meaning of these "data that seem to be related to the something" is what they mean literally.
+# 2. Through qualitative research to understand the importance of games among the many ways users kill time
+# 
+#
