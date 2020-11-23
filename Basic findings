@@ -1,0 +1,48 @@
+Aspects we could look / looked at
+1. Frequency
+a. Most popular activities
+b. Activities whose usage declines over time
+c. Usage prior to lockdown and during lockdown
+d. New lockdown users do they use it in the same way as any new user?
+e. Time of year
+
+2. Correlations
+a. Between activities, i.e. games with music, types of games
+b. Activities and personal characteristics age, gender, disability
+c. Location and type of accommodation own home, Blackwood tenancy, care home
+d. Time of introduction to CleverCogs
+e. Correlation in the activities used between prior to and during lockdown
+f.Correlation between LinkTypes
+
+
+
+-- previous findings
+The age of users is mainly between 41 and 90 years old, among which 81-90 years old is the most, followed by 51-60 years old. The subjects were mainly older adults.
+
+Female users were the majority, but there was little difference in the number of male and female users.
+
+Among all the customer information collected, mental health problems, cerebral palsy and dementia were also common among the users most in need of care/support.
+
+According to statistics on Internet platform access behaviour used in the past two years, "Entertainment", "My Interests", "YouTube", "Google" and "My Music" have the highest click rates, and categories and types of Internet links are the most accessible.
+
+In recent two years, the click rate of users in the main building area of Belses and Broom has been increasing gradually, while the click rate of users in Raeden Court and the West Area has been decreasing gradually.
+
+The number of visitors from December 2018 to February 2019 was a trough, reflected in the synchronous decline of the two most popular link types, Internet and category. During the epidemic this year, from March to May 2020, the number of visitors to the Internet and categories increased significantly. Traffic to other sites is generally declining. User access habits are relatively fixed, and popular mainstream sites are still in high demand.
+
+There are more female users than male users in high-traffic site types such as Internet, Category and HTMLPage, while there are more male users than female users in other low-traffic sites.
+
+To explore the relationship between age and page views, in general, the page views within the whole age range are distributed between 0 and 5000, but the entire distribution shows an inverted U-shaped curve and a quadratic relationship. To sum up, with the growth of age, the number of visitors to the platform will gradually increase, but after a certain age, the number of visitors to the platform will decline.
+
+Changes in LinkType use and access frequency at different ages
+The age difference between niche sites is not obvious
+For some popular sites, the age difference is striking. Older people are more likely to visit traditional websites, while younger people are more likely to visit platforms such as YouTube.
+
+Given the assumption that customers from different locations have different preferences for accessing websites, the number of more popular link types, such as the Internet and categories, varies greatly in location-based terms. For niche sites, the difference between regions is not significant because the overall frequency of visits to these sites is small.
+
+From the perspective of the number of visits by users of different age groups, the number of users aged 20 to 50 remained basically unchanged in two years, while the number of users aged 51 to 100 decreased in the second year. However, the overall average level of access for users between the ages of 20 and 70 was similar. As noted above, the primary user group is still in the 40-70 age range due to the large outliers and box lengths in the Numbers. The future development of CleverCogs can further provide services and platform support by combining the impact of the external environment on different age groups of users.
+
+In the link types with high visiting rate, such as Internet, category and HTMLPage, female visitors are more than male; In other types of sites with low visitor rates, men have more visitors than women. For this use, we could also do classification research and service support.
+
+(add/adjust any thing you like)
+
+
