@@ -19,7 +19,7 @@ import statsmodels.api as sm
 
 
 customer = pd.read_excel('./CustomerDataAnon.xlsx',index_col=0)
-cc = pd.read_excel('./cleaned_data.xls',index_col=0)
+cc = pd.read_excel('./cleaned_data.xlsx',index_col=0)
 
 
 # In[3]:
