@@ -68,7 +68,7 @@ plt.show()
 
 # In[7]:
 
-
+# Figure e4
 # Heatmap of use of LinkTitle and access frequency at different health conditions
 tempDf = cc.groupby(['ExternalID','LinkTitle'],as_index=False).count()
 # Merge data, link  Externl ID in cc with ID in customer — being the common link
@@ -101,7 +101,6 @@ plt.show()
 
 # In[21]:
 
-
 # The number of visits of different LinkTypes between Genders
 # Group data and compute operations on them, ExternalId and LinkType are indexed
 tempDf = cc.groupby(['ExternalID','LinkType'],as_index=False).count()
@@ -120,8 +119,10 @@ index=numpy.arange(len(result))
 plt.title('Number of visits of different linktypes between genders') # Add title
 plt.show()
 
+# blank image for now
 
 
+# !!!
 # Problems to solve: 1. would the length of Figure e4 affect the entire layout of our infographics 2. unsuccessful practice of bidirectional bar chart
 
 
