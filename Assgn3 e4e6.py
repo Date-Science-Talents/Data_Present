@@ -119,10 +119,6 @@ index=numpy.arange(len(result))
 plt.title('Number of visits of different linktypes between genders') # Add title
 plt.show()
 
-# blank image for now
-
-
-# !!!
 # Problems to solve: 1. would the length of Figure e4 affect the entire layout of our infographics 2. unsuccessful practice of bidirectional bar chart
 
 
