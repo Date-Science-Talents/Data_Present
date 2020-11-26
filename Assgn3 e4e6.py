@@ -1,0 +1,133 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# In[1]:
+
+
+# Necessary import
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import time
+import datetime # standard Python library for dates and times
+# Import statsmodels Python statistical module for data exploration and visualization
+import statsmodels.api as sm
+
+
+# In[2]:
+
+
+customer = pd.read_excel('./CustomerDataAnon.xlsx',index_col=0)
+cc = pd.read_excel('./cleaned_data.xls',index_col=0)
+
+
+# In[3]:
+
+
+customer.head()
+
+
+# In[4]:
+
+
+cc.head()
+
+
+# In[5]:
+
+
+# test only！
+# Heatmap of use of LinkTypes and access frequency at different locations
+# Group data and compute operations on them, Location and LinkType are indexed
+tempDf = cc.groupby(['Service & Location','LinkType']).count()
+tempDf.fillna(0,inplace=True) # Fill NaN values
+tempDf = tempDf.unstack(level=-1)['VisitorID']  # Replace NaN with VisitorID if the unstack produces missing values
+# Create heatmap to show indensity
+plt.figure(figsize=(15,10)) # Set canvas size
+sns.heatmap(tempDf).set(xlabel='LinkType',ylabel='Service & Location')
+plt.title('Heatmap of use of LinkTypes and access frequency at different locations') # Add title
+plt.show()
+
+
+# In[6]:
+
+
+# Heatmap of use of LinkTypes and access frequency at different health conditions
+tempDf = cc.groupby(['ExternalID','LinkType'],as_index=False).count()
+# Merge data, link  Externl ID in cc with ID in customer — being the common link
+tempDf = pd.merge(left=tempDf,right=customer,how="inner",left_on='ExternalID',right_on='ID')
+tempDf = tempDf.groupby(['CareSysCondition','LinkType']).count()
+tempDf = tempDf.unstack(level=-1)['VisitorID']
+# Create heatmap to show indensity
+plt.figure(figsize=(15,10)) # Set canvas size
+sns.heatmap(tempDf).set(xlabel='LinkType',ylabel='CareSysCondition')
+plt.title('Heatmap of use of LinkTypes and access frequency at different health conditions') # Add title
+plt.show()
+
+
+# In[7]:
+
+
+# Heatmap of use of LinkTitle and access frequency at different health conditions
+tempDf = cc.groupby(['ExternalID','LinkTitle'],as_index=False).count()
+# Merge data, link  Externl ID in cc with ID in customer — being the common link
+tempDf = pd.merge(left=tempDf,right=customer,how="inner",left_on='ExternalID',right_on='ID')
+tempDf = tempDf.groupby(['CareSysCondition','LinkTitle']).count()
+tempDf = tempDf.unstack(level=-1)['VisitorID']
+# Create heatmap to show indensity
+plt.figure(figsize=(25,12)) # Set canvas size
+sns.heatmap(tempDf).set(xlabel='LinkTitle',ylabel='CareSysCondition')
+plt.title('Heatmap of use of LinkTitle and access frequency at different health conditions') # Add title
+plt.show()
+
+
+# In[8]:
+
+
+# The number of visits of different LinkTypes between Genders
+# Group data and compute operations on them, ExternalId and LinkType are indexed
+tempDf = cc.groupby(['ExternalID','LinkType'],as_index=False).count()
+# Merge data, link  Externl ID in cc with ID in customer — being the common link
+tempDf = pd.merge(left=tempDf,right=customer,how="inner",left_on='ExternalID',right_on='ID')
+tempDf = tempDf.groupby(['Gender','LinkType'],as_index=False).count()
+# Use bar chart to show differences
+plt.figure(figsize=(25,15)) # Set canvas size
+sns.barplot(x='LinkType',y='ExternalID',hue='Gender',data=tempDf).set(xlabel='LinkType',ylabel='Number of visits')
+plt.title('Number of visits of different linktypes between genders') # Add title
+plt.show()
+
+
+# In[21]:
+
+
+# The number of visits of different LinkTypes between Genders
+# Group data and compute operations on them, ExternalId and LinkType are indexed
+tempDf = cc.groupby(['ExternalID','LinkType'],as_index=False).count()
+# Merge data, link  Externl ID in cc with ID in customer — being the common link
+tempDf = pd.merge(left=tempDf,right=customer,how="inner",left_on='ExternalID',right_on='ID')
+tempDf = tempDf.groupby(['Gender','LinkType'],as_index=False).count()
+# Use bar chart to show differences
+plt.figure(figsize=(25,15)) # Set canvas size
+result=tempDf.pivot_table(
+       values='LinkType',
+       index='ExternalID',
+       columns='Gender',
+       aggfunc=numpy.sum
+       )
+index=numpy.arange(len(result))
+plt.title('Number of visits of different linktypes between genders') # Add title
+plt.show()
+
+
+# In[ ]:
+
+
+
+
+
+# In[ ]:
+
+
+
+
