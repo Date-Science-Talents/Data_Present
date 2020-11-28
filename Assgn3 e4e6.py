@@ -33,23 +33,6 @@ customer.head()
 
 cc.head()
 
-
-# In[5]:
-
-
-# test only！
-# Heatmap of use of LinkTypes and access frequency at different locations
-# Group data and compute operations on them, Location and LinkType are indexed
-tempDf = cc.groupby(['Service & Location','LinkType']).count()
-tempDf.fillna(0,inplace=True) # Fill NaN values
-tempDf = tempDf.unstack(level=-1)['VisitorID']  # Replace NaN with VisitorID if the unstack produces missing values
-# Create heatmap to show indensity
-plt.figure(figsize=(15,10)) # Set canvas size
-sns.heatmap(tempDf).set(xlabel='LinkType',ylabel='Service & Location')
-plt.title('Heatmap of use of LinkTypes and access frequency at different locations') # Add title
-plt.show()
-
-
 # In[6]:
 
 
