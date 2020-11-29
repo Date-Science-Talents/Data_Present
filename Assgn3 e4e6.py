@@ -36,16 +36,16 @@ cc.head()
 # In[6]:
 
 
-# Heatmap of use of LinkTypes and access frequency at different health conditions
-tempDf = cc.groupby(['ExternalID','LinkType'],as_index=False).count()
+# Heatmap of use of LinkTitle and access frequency at different health conditions
+tempDf = cc.groupby(['ExternalID','LinkTitle'],as_index=False).count()
 # Merge data, link  Externl ID in cc with ID in customer — being the common link
 tempDf = pd.merge(left=tempDf,right=customer,how="inner",left_on='ExternalID',right_on='ID')
-tempDf = tempDf.groupby(['CareSysCondition','LinkType']).count()
+tempDf = tempDf.groupby(['LinkTitle','CareSysCondition']).count()
 tempDf = tempDf.unstack(level=-1)['VisitorID']
 # Create heatmap to show indensity
-plt.figure(figsize=(15,10)) # Set canvas size
-sns.heatmap(tempDf).set(xlabel='LinkType',ylabel='CareSysCondition')
-plt.title('Heatmap of use of LinkTypes and access frequency at different health conditions') # Add title
+plt.figure(figsize=(15,50)) # Set canvas size
+sns.heatmap(tempDf).set(xlabel='CareSysCondition',ylabel='LinkTitle')
+plt.title('Heatmap of use of LinkTitle and access frequency at different health conditions') # Add title
 plt.show()
 
 
@@ -104,7 +104,9 @@ plt.show()
 
 # Problems to solve: 1. would the length of Figure e4 affect the entire layout of our infographics 2. unsuccessful practice of bidirectional bar chart
 
+customer.iloc[:,0:1]
 
 
+# Problem 3 drop U in Gender or not？
 
 
