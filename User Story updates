@@ -1,0 +1,60 @@
+1. Background of the project. 
+a. In a word, what is the purpose of the project? check the official website. 
+Blackwood Homes and Care was founded in 1972 by Dr Margaret Blackwood MBE, a campaigner for the rights and independence of disabled people. 
+We deliver our vision of helping people live their life to the full in the pioneering spirit of Dr Blackwood by providing high quality housing, care and support for disabled people of all ages, with over 1500 homes across all 29 mainland local authorities in Scotland. 
+b. What is our work: 
+analyze the project data, help the project team understand the current situation, and use the data to support the project team to make decisions. 
+Purpose: to use data to support the project team to understand the users of the platform and make decisions. 
+Methods: quantitative data analysis was carried out through the reported data on the page of the platform and the business data in the database. 
+
+2. The current situation of a project can be analysed from different dimensions. We choose to analyse from the user's dimension to help the project team understand the situation of their users. " 
+
+3. Question 1: how many users are there? 
+a. Monthly active users (visitor and external)
+b. Total user growth (visitor and external)
+c. New user growth (visitor and external) 
+
+4. Question 2: who is the user? 
+a. Where is the user? 
+- Classify according to housing ownership score
+https://public.flourish.studio/visualisation/4539620/. 
+- Classify according to geographical location. 
+https://public.flourish.studio/visualisation/4539302/. 
+b. Who is the user? 
+Gender
+Age
+Disabled / Non-disabled
+Disability type
+Identity, visitor or external identity. 
+c. screenshots of videos on YouTube or clips, to tell  that these people are your users. " 
+
+5. Question 3: how do users use Clevercogs? what activities have users done on Clevercogs? 
+a. Sub-problem:  too many activities to understand. 
+Label these activities and conduct cluster activities. 
+https://app.flourish.studio/visualisation/4539648.  
+b. Sub-question: what is the difference in the activities done by different types of users? 
+Different genders
+https://public.flourish.studio/visualisation/4540641/. 
+Different geographical location
+Different ages
+Different disabilities
+Difference between disability and non-disability. 
+etc.
+c. Sub-question: why is there such a difference? 
+We don't know. Could draw a conclusion from some qualitative research. 
+
+6. Question 4: Clevercogs easy to learn? 
+a. Comparison of new and old users' habits. 
+
+7. Question 5: is the user's habit stable? whether changes in the external environment will affect the use of users? 
+1. It will affect. 
+Example: lockdown has an impact on users' use? 
+1. Changes in user behaviour data before and after lockdown (video). 
+a. The number of game has soared. 
+b. The number of help-related functions and covid-19-related searches has skyrocketed. 
+2. Why is there such a change? What kind of changes have different users contributed? 
+Read it by label in the follow-up. 
+
+8.Summary. 
+1. Data summary (feature + conclusion)
+2.missing work (due to lack of data)
